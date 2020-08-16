@@ -2,6 +2,7 @@ package Middlewares
 
 import (
 	util "github.com/architagr/workflow/internal/util"
+	models "github.com/architagr/workflow/models"
 	gin "github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -34,7 +35,18 @@ func AuthenticationRequired() gin.HandlerFunc {
 
 		apikey := util.GetApiKey(c.Request)
 		if apikey == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Api key is not presend in header"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized,
+				models.Response{
+					Status: http.StatusUnauthorized,
+					Error: []models.ErrorDetail{
+						models.ErrorDetail{
+							ErrorType:    models.GetErrorTypeName(models.ErrorTypeFatal),
+							ErrorMessage: "Api key is not presend in header",
+						},
+					},
+					Message: "One or more error occured",
+				},
+			)
 			return
 		}
 		keys := map[string]string{
@@ -42,7 +54,18 @@ func AuthenticationRequired() gin.HandlerFunc {
 		}
 		companyName, found := keys[apikey]
 		if !found {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "invalid Api key, restricted endpoint"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized,
+				models.Response{
+					Status: http.StatusUnauthorized,
+					Error: []models.ErrorDetail{
+						models.ErrorDetail{
+							ErrorType:    models.GetErrorTypeName(models.ErrorTypeFatal),
+							ErrorMessage: "invalid Api key, restricted endpoint",
+						},
+					},
+					Message: "One or more error occured",
+				},
+			)
 			return
 		}
 		if len(c.Keys) == 0 {
@@ -50,9 +73,7 @@ func AuthenticationRequired() gin.HandlerFunc {
 		}
 		c.Keys[GetContextKeysName(ContextCmpnayDetails)] = companyName
 		c.Keys[GetContextKeysName(ContextApiKey)] = apikey
-		// add session verification here, like checking if the user and authType
-		// combination actually exists if necessary. Try adding caching this (redis)
-		// since this middleware might be called a lot
+
 		c.Next()
 	}
 }

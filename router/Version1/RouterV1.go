@@ -4,6 +4,7 @@ import (
 	"fmt"
 	middleware "github.com/architagr/workflow/Middlewares"
 	routeHandler "github.com/architagr/workflow/RouteHandler/Version1"
+	models "github.com/architagr/workflow/models"
 	gin "github.com/gin-gonic/gin"
 	http "net/http"
 )
@@ -37,16 +38,62 @@ func RouterVersion1(r *gin.Engine) {
 				apiKey := fmt.Sprintf("%v", c.Keys[middleware.GetContextKeysName(middleware.ContextApiKey)])
 				var flowhadler routeHandler.FlowHandler
 				allWorkflow, _ := flowhadler.GetAll(apiKey)
-				c.JSON(http.StatusOK, gin.H{
-					"Data":        allWorkflow,
-					"CompanyName": c.Keys[middleware.GetContextKeysName(middleware.ContextCmpnayDetails)],
-					"apikey":      apiKey,
-				})
+				c.JSON(http.StatusOK,
+					models.ListResponse{
+						TotalCount:     len(allWorkflow),
+						StartPageIndex: 1,
+						EndPageIndex:   len(allWorkflow),
+						Data:           allWorkflow,
+						Status:         http.StatusOK,
+						Message:        fmt.Sprintf("total count of records are %v", len(allWorkflow)),
+					},
+				)
 
 			})
 			flow.POST("", func(c *gin.Context) {
-				fmt.Println("v1/flow -> post")
-				c.String(http.StatusOK, c.FullPath())
+				var objA models.Flow
+				if errA := c.ShouldBind(&objA); errA == nil {
+
+					apiKey := fmt.Sprintf("%v", c.Keys[middleware.GetContextKeysName(middleware.ContextApiKey)])
+					var flowhadler routeHandler.FlowHandler
+					flowhadler.FlowDetails = objA
+					newWorkflow, err := flowhadler.AddNewFlow(apiKey)
+					if err == nil {
+						c.JSON(http.StatusOK,
+							models.Response{
+								Data:    newWorkflow,
+								Status:  http.StatusOK,
+								Message: fmt.Sprintf("Workflow Added with flow Id %v", newWorkflow.Id),
+							},
+						)
+					} else {
+						c.JSON(http.StatusBadRequest,
+							models.Response{
+								Error: []models.ErrorDetail{
+									models.ErrorDetail{
+										ErrorType:    models.GetErrorTypeName(models.ErrorTypeError),
+										ErrorMessage: fmt.Sprintf("%v", err),
+									},
+								},
+								Status:  http.StatusBadRequest,
+								Message: fmt.Sprintf("Workflow not added"),
+							},
+						)
+					}
+				} else {
+					c.JSON(http.StatusBadRequest,
+						models.Response{
+							Error: []models.ErrorDetail{
+								models.ErrorDetail{
+									ErrorType:    models.GetErrorTypeName(models.ErrorTypeError),
+									ErrorMessage: fmt.Sprintf("%v", errA),
+								},
+							},
+							Status:  http.StatusBadRequest,
+							Message: fmt.Sprintf("Workflow not added"),
+						},
+					)
+				}
 			})
 		}
 

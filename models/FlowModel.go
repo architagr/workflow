@@ -62,14 +62,14 @@ type FlowConnection struct {
 
 type Flow struct {
 	Id            int64                     `json:"Id"`
-	Version		  string                    `json:"Version"`
-	FlowName      string                    `json:"flowName"`
+	Version       string                    `json:"Version"`
+	FlowName      string                    `json:"flowName" binding:"required"`
 	CompanyId     int64                     `json:"CompanyId"`
 	Webhook       FlowWeebhookDetail        `json:"Webhook"`
-	DefaultArgs   []string                  `json:"DefaultArgs"`
+	DefaultArgs   []string                  `json:"DefaultArgs" binding:"required"`
 	StartEntityId int64                     `json:"StartEntityId"`
-	Entities      map[string]FlowEntity     `json:"Entities"`
-	Connections   map[string]FlowConnection `json:"Connections"`
+	Entities      map[string]FlowEntity     `json:"Entities" binding:"required"`
+	Connections   map[string]FlowConnection `json:"Connections" binding:"required"`
 }
 
 type FlowTaskFields struct {
