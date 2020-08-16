@@ -10,6 +10,7 @@ type Configuration struct{
 	Ip string `json:"Ip"`
 	Port string `jsom:"Port"`
 	DataBaseConnection string `json:"DataBaseConnection"`
+    DatabaseType int16 `json:"DatabaseType"`
 }
 
 func (e *Configuration) Init(environment string) (Configuration, error) {
