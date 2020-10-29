@@ -1,10 +1,11 @@
 package Middlewares
 
 import (
+	"net/http"
+
 	util "github.com/architagr/workflow/internal/util"
 	models "github.com/architagr/workflow/models"
 	gin "github.com/gin-gonic/gin"
-	"net/http"
 )
 
 const (
@@ -39,7 +40,7 @@ func AuthenticationRequired() gin.HandlerFunc {
 				models.Response{
 					Status: http.StatusUnauthorized,
 					Error: []models.ErrorDetail{
-						models.ErrorDetail{
+						{
 							ErrorType:    models.GetErrorTypeName(models.ErrorTypeFatal),
 							ErrorMessage: "Api key is not presend in header",
 						},

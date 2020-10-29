@@ -2,11 +2,12 @@ package version1
 
 import (
 	"fmt"
+	http "net/http"
+
 	middleware "github.com/architagr/workflow/Middlewares"
 	routeHandler "github.com/architagr/workflow/RouteHandler/Version1"
 	models "github.com/architagr/workflow/models"
 	gin "github.com/gin-gonic/gin"
-	http "net/http"
 )
 
 //route paramenters indexing
